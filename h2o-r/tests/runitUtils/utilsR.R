@@ -859,11 +859,73 @@ compareFrames <- function(frame1, frame2, prob=0.5, tolerance=1e-6) {
     temp2=as.numeric(frame2[,colInd])
     for (rowInd in range(1,nrow(frame1))) {
       if (runif(1,0,1) < prob)
-        if (is.nan(temp1[rowInd,1])) {
-          expect_true(is.nan(temp2[rowInd,1]), info=paste0("Errow at row ", rowInd, ". Frame is value is nan but Frame 2 value is ", temp2[rowInd, 1]))
+        if (is.nan(temp1[rowInd])) {
+          expect_true(is.nan(temp2[rowInd]), info=paste0("Errow at row ", rowInd, ". Frame is value is nan but Frame 2 value is ", temp2[rowInd]))
         } else {
-          expect_true((abs(temp1[rowInd,1]-temp2[rowInd,1])/max(1,abs(temp1[rowInd,1]), abs(temp2[rowInd, 1])))< tolerance, info=paste0("Error at row ", rowInd, ". Frame 1 value ", temp1[rowInd, 1], ". Frame 2 value ", temp2[rowInd, 1]))
+          expect_true((abs(temp1[rowInd]-temp2[rowInd])/max(1,abs(temp1[rowInd]), abs(temp2[rowInd])))< tolerance, info=paste0("Error at row ", rowInd, ". Frame 1 value ", temp1[rowInd], ". Frame 2 value ", temp2[rowInd]))
         }
+    }
+  }
+}
+
+assertCorrectSkipColumns <-
+  function(inputFileName, f1R,
+           skip_columns,
+           use_import, allFrameTypes) {
+    if (use_import) {
+      wholeFrame <<-
+        h2o.importFile(inputFileName, skipped_columns = skip_columns)
+    } else  {
+      wholeFrame <<-
+        h2o.uploadFile(inputFileName, skipped_columns = skip_columns)
+    }
+    
+    expect_true(h2o.nrow(wholeFrame)==nrow(f1R))
+    cfullnames <- names(f1R)
+    f2R <- as.data.frame(wholeFrame)
+    cskipnames <- names(f2R)
+    skipcount <- 1
+    rowNum <- h2o.nrow(f1R)
+    for (ind in c(1:length(cfullnames))) {
+      if (cfullnames[ind] == cskipnames[skipcount]) {
+        if (allFrameTypes[ind]=="uuid")
+          continue
+        for (rind in c(1:rowNum)) {
+          if (is.na(f1R[rind, ind]))
+            expect_true(is.na(f2R[rind, skipcount]), info=paste0("expected NA but received: ", f2R[rind, skipcount], " in row: ", rind, " with column name: ", cfullnames[ind], " and skipped column name ", cskipnames[skipcount], sep=" "))
+          else if (is.numeric(f1R[rind, ind])) {
+            if (allFrameTypes[ind]=='time')
+              expect_true(abs(f1R[rind, ind]-f2R[rind, skipcount])<10, info=paste0("expected: ", f1R[rind, ind], " but received: ", f2R[rind, skipcount], " in row: ", rind, " with column name: ", cfullnames[ind], " and skipped column name ", cskipnames[skipcount], sep=" "))
+            
+            else
+              expect_true(abs(f1R[rind, ind]-f2R[rind, skipcount])<1e-10, info=paste0("expected: ", f1R[rind, ind], " but received: ", f2R[rind, skipcount], " in row: ", rind, " with column name: ", cfullnames[ind], " and skipped column name ", cskipnames[skipcount], sep=" "))
+          } else
+            expect_true(f1R[rind, ind] == f2R[rind, skipcount], info=paste0("expected: ", f1R[rind, ind], " but received: ", f2R[rind, skipcount], " in row: ", rind, " with column name: ", cfullnames[ind], " and skipped column name ", cskipnames[skipcount], sep=" "))
+        }
+        skipcount <- skipcount + 1
+        if (skipcount > h2o.ncol(f2R))
+          break
+      }
+    }
+    print("Test completed!")
+  }
+
+compareFramesSVM <- function(f1, f2Svm, prob=0.5, tolerance=1e-6) {
+  frame1 <- as.data.frame(f1)
+  frame2 <- as.data.frame(f2Svm)
+
+  expect_true(nrow(frame1) == nrow(frame2) && ncol(frame1) == ncol(frame2), info="frame1 and frame2 are different in size.")
+
+  for (colInd in range(1, ncol(frame1))) {
+    temp1=frame1[,colInd]
+    temp2=frame2[,colInd]
+    for (rowInd in range(1,nrow(frame1))) {
+      if (runif(1,0,1) < prob)
+      if (is.nan(temp1[rowInd])) {
+        expect_true(abs(temp2[rowInd])<tolerance, info=paste0("Errow at row ", rowInd, ". Frame is value is nan but Frame 2 value is ", temp2[rowInd]))
+      } else {
+        expect_true((abs(temp1[rowInd]-temp2[rowInd])/max(1,abs(temp1[rowInd]), abs(temp2[rowInd])))< tolerance, info=paste0("Error at row ", rowInd, ". Frame 1 value ", temp1[rowInd], ". Frame 2 value ", temp2[rowInd]))
+      }
     }
   }
 }
@@ -879,7 +941,7 @@ compareStringFrames <- function(frame1, frame2, prob=0.5) {
     temp2 <- dframe2[cnames2[colInd]]
     for (rowInd in range(1,nrow(frame1))) {
       if (runif(1,0,1) < prob)
-        expect_true(temp1[rowInd,1]==temp2[rowInd,1], info=paste0("Errow at row ", rowInd, ". Frame is value is ", temp1[rowInd,1], " , but Frame 2 value is ", temp2[rowInd, 1]))
+        expect_true(temp1[rowInd]==temp2[rowInd], info=paste0("Errow at row ", rowInd, ". Frame is value is ", temp1[rowInd], " , but Frame 2 value is ", temp2[rowInd]))
     }
   }
 }

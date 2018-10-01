@@ -71,6 +71,12 @@ rootProject.children.each { project ->
 //
 // Include Hadoop builds only if requested
 //
+
+// the next two lines are for me to test out orc parser.  Do not commit
+include 'h2o-hadoop:h2o-cdh5.8'           // do not commit, only needed for testing orc parser
+include 'h2o-hadoop:h2o-cdh5.8-assembly'  // do not commit, only needed for testing orc parser
+
+
 if (System.getProperty("user.name").equals("jenkins")
         || System.getenv("BUILD_HADOOP") != null
         || System.getenv("H2O_TARGET") != null) {
