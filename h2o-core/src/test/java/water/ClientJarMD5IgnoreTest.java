@@ -28,7 +28,7 @@ public class ClientJarMD5IgnoreTest extends TestUtil {
 
     // send client heartbeat with different md5
     AutoBuffer ab = new AutoBuffer(H2O.SELF, UDP.udp.heartbeat._prior);
-    ab.putUdp(UDP.udp.heartbeat, 65400); // put different port number to simulate heartbeat from fake node
+    ab.putUdp(UDP.udp.heartbeat, 65400, AutoBuffer.calculateNodeUniqueMeta(H2O.SELF)); // put different port number to simulate heartbeat from fake node
     hb.write(ab);
     ab.close();
 

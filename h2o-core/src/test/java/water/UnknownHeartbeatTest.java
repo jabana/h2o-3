@@ -21,7 +21,7 @@ public class UnknownHeartbeatTest extends TestUtil{
     hb._jar_md5 = H2O.SELF._heartbeat._jar_md5;
 
     AutoBuffer ab = new AutoBuffer(H2O.SELF, UDP.udp.heartbeat._prior);
-    ab.putUdp(UDP.udp.heartbeat, 65400); // put different port number to simulate heartbeat from fake node
+    ab.putUdp(UDP.udp.heartbeat, 65400, AutoBuffer.calculateNodeUniqueMeta(H2O.SELF)); // put different port number to simulate heartbeat from fake node
     hb.write(ab);
     ab.close();
 
@@ -36,7 +36,7 @@ public class UnknownHeartbeatTest extends TestUtil{
     ext.clear();
 
     new AutoBuffer(H2O.SELF, UDP.udp.rebooted._prior)
-            .putUdp(UDP.udp.rebooted, 65400)
+            .putUdp(UDP.udp.rebooted, 65400, AutoBuffer.calculateNodeUniqueMeta(H2O.SELF))
             .put1(UDPRebooted.MAGIC_SAFE_CLUSTER_KILL_BYTE)
             .put1(UDPRebooted.T.error.ordinal())
             .putInt(777) // 777 is the hashcode of the origin cloud
@@ -63,7 +63,7 @@ public class UnknownHeartbeatTest extends TestUtil{
 
     // Test that when request comes from the old H2O version ( older than 3.14.0.4 where the fix is implemented )
     AutoBuffer ab = new AutoBuffer(H2O.SELF, UDP.udp.rebooted._prior);
-    ab.putUdp(UDP.udp.rebooted, 65400).put1(UDPRebooted.T.error.ordinal()).putInt(777); // 777 is the hashcode of the origin cloud
+    ab.putUdp(UDP.udp.rebooted, 65400, AutoBuffer.calculateNodeUniqueMeta(H2O.SELF)).put1(UDPRebooted.T.error.ordinal()).putInt(777); // 777 is the hashcode of the origin cloud
     ab.close();
 
     // Give it time so the packet can arrive

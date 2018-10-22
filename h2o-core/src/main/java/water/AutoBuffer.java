@@ -130,7 +130,7 @@ public final class AutoBuffer {
    * @return AutoBuffer
    */
   static AutoBuffer createForMulticastWrite(UDP.udp type){
-    return new AutoBuffer(H2O.SELF, type._prior).putUdp(type).put2((char)H2O.H2O_PORT);
+    return new AutoBuffer(H2O.SELF, type._prior).putUdp(type);
   }
 
   /** Incoming TCP request.  Make a read-mode AutoBuffer from the open Channel,
@@ -483,7 +483,7 @@ public final class AutoBuffer {
   // Need a sock for a big read or write operation.
   // See if we got one already, else open a new socket.
   private void tcpOpen() throws IOException {
-    assert _firstPage && _bb.limit() >= 1+2+4; // At least something written
+    assert _firstPage && _bb.limit() >= 1+2+2+4; // At least something written
     assert _chan == null;
 //    assert _bb.position()==0;
     _chan = _h2o.getTCPSocket();
@@ -995,7 +995,7 @@ public final class AutoBuffer {
   // Get unique ID in next 2 bytes
   int getUniqueId() { return getSz(1+2).getChar(1);}
   // Get the port in next 2 bytes
-  int getPort( ) { return getSz(1+2).getChar(1+2); }
+  int getPort( ) { return getSz(1+2+2).getChar(1+2); }
   // Get the task# in the next 4 bytes
   int  getTask( ) { return getSz(1+2+2+4).getInt(1+2+2); }
   // Get the flag in the next 1 byte
@@ -1047,7 +1047,7 @@ public final class AutoBuffer {
 
   AutoBuffer putTask(int ctrl, int tasknum) {
     assert _bb.position() == 0;
-    putSp(_bb.position()+1+2+4);
+    putSp(_bb.position()+1+2+2+4);
     _bb.put((byte)ctrl).putChar(calculateNodeUniqueMeta(H2O.SELF)).putChar((char)H2O.H2O_PORT).putInt(tasknum);
     return this;
   }
