@@ -139,7 +139,7 @@ public final class AutoBuffer {
    *  remoteAddress set to null means that the communication is originating from non-h2o node, non-null value
    *  represents the case where the communication is coming from h2o node.
    *  */
-  public AutoBuffer(ByteChannel sock, InetAddress remoteAddress ) throws IOException {
+  public AutoBuffer( ByteChannel sock, InetAddress remoteAddress  ) throws IOException {
     _chan = sock;
     raisePriority();            // Make TCP priority high
     _bb = BBP_BIG.make();       // Get a big / TPC-sized ByteBuffer
@@ -148,8 +148,8 @@ public final class AutoBuffer {
     _firstPage = true;
 
     // Read Inet from socket, port from the stream, figure out H2ONode
-    if(remoteAddress != null){
-      _h2o = H2ONode.intern(remoteAddress.getAddress(), getPort());
+    if(remoteAddress!=null) {
+      _h2o = H2ONode.intern(remoteAddress, getPort());
     }else{
       // In case the communication originates from non-h2o node, we set _h2o node to null.
       // It is done for 2 reasons:
@@ -1011,7 +1011,7 @@ public final class AutoBuffer {
    */
   AutoBuffer putUdp(UDP.udp type, int senderPort, int nodeMeta){
     assert _bb.position() == 0;
-    putSp(_bb.position() + 1 + 2 + 2);
+    putSp(_bb.position()+1+2+2);
     _bb.put    ((byte)type.ordinal());
     _bb.putChar((char)nodeMeta);
     _bb.putChar((char)senderPort);

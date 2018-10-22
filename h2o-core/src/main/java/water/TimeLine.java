@@ -239,7 +239,7 @@ public class TimeLine extends UDP {
   // this allows us to skip to the right location without the need to check for
   // additional multicast headers
   static void tcp_call( final AutoBuffer ab ) {
-    ab.position(1+2); //set the ab position after ctrl and nodeId bytes
+    ab.getPort();
     long[] snap = ab.getA8();
     int idx = CLOUD.nidx(ab._h2o);
     if (idx >= 0 && idx < SNAPSHOT.length)

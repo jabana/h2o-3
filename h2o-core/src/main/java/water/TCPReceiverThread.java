@@ -278,7 +278,6 @@ public class TCPReceiverThread extends Thread {
     // Randomly drop 1/10th of the packets, as-if broken network.  Dropped
     // packets are timeline recorded before dropping - and we still will
     // respond to timelines and suicide packets.
-    int pos = ab.position();
     int drop = H2O.ARGS.random_udp_drop &&
             RANDOM_UDP_DROP.nextInt(5) == 0 ? 2 : 0;
 
@@ -290,9 +289,7 @@ public class TCPReceiverThread extends Thread {
     // being handled during the dump.  Also works for packets from outside the
     // Cloud... because we use Timelines to diagnose Paxos failures.
     int ctrl = ab.getCtrl();
-    // reset the position to the one before calling getCtrl as that method also changes the
-    // current position
-    ab.position(pos);
+    ab.getPort(); // skip the port bytes
     if( ctrl == UDP.udp.timeline.ordinal() ) {
       UDP.udp.timeline._udp.call(ab);
       return;
