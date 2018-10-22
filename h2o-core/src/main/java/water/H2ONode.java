@@ -315,7 +315,7 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
     sock2.socket().setSendBufferSize(AutoBuffer.BBP_BIG._size);
     boolean res = sock2.connect( _key );
     assert res && !sock2.isConnectionPending() && sock2.isBlocking() && sock2.isConnected() && sock2.isOpen();
-    ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder());
+    ByteBuffer bb = ByteBuffer.allocate(6).order(ByteOrder.nativeOrder());
     bb.put((byte)2);
     bb.putChar(AutoBuffer.calculateNodeUniqueMeta(H2O.SELF));
     bb.putChar((char)H2O.H2O_PORT);
@@ -367,7 +367,7 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
     sock.configureBlocking(true);
     assert !sock.isConnectionPending() && sock.isBlocking() && sock.isConnected() && sock.isOpen();
     sock.socket().setTcpNoDelay(true);
-    ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder());
+    ByteBuffer bb = ByteBuffer.allocate(6).order(ByteOrder.nativeOrder());
     bb.put(tcpType).putChar(AutoBuffer.calculateNodeUniqueMeta(H2O.SELF)).putChar((char)H2O.H2O_PORT).put((byte) 0xef).flip();
 
     ByteChannel wrappedSocket = socketFactory.clientChannel(sock, isa.getHostName(), isa.getPort());

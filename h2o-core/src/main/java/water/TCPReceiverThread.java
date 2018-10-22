@@ -88,7 +88,7 @@ public class TCPReceiverThread extends Thread {
         }
         // Block for TCP connection and setup to read from it.
         SocketChannel sock = SOCK.accept();
-        ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder());
+        ByteBuffer bb = ByteBuffer.allocate(6).order(ByteOrder.nativeOrder());
         ByteChannel wrappedSocket = socketChannelFactory.serverChannel(sock);
         bb.limit(bb.capacity());
         bb.position(0);
