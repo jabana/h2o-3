@@ -97,8 +97,8 @@ public class TCPReceiverThread extends Thread {
         }
         bb.flip();
         int chanType = bb.get(); // 1 - small , 2 - big
-        int port = bb.getChar(); // read port
         char nodeMeta = bb.getChar(); // read note id
+        int port = bb.getChar(); // read port
         boolean isClient = AutoBuffer.decodeIsClient(nodeMeta);
         int uniqueNum = AutoBuffer.decodeUniqueNumber(nodeMeta);
         int sentinel = (0xFF) & bb.get();
@@ -115,7 +115,6 @@ public class TCPReceiverThread extends Thread {
         // Do H2O.Intern in corresponding case branch, we can't do H2O.intern here since it wouldn't work
         // with ExternalFrameHandling ( we don't send the same information there as with the other communication)
         InetAddress inetAddress = sock.socket().getInetAddress();
-        InetSocketAddress inetSocketAddress = (InetSocketAddress) sock.getRemoteAddress();
         // Pass off the TCP connection to a separate reader thread
         switch( chanType ) {
         case TCP_SMALL:

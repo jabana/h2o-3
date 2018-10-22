@@ -992,14 +992,14 @@ public final class AutoBuffer {
   // Utility functions to handle common UDP packet tasks.
   // Get the 1st control byte
   int  getCtrl( ) { return getSz(1).get(0)&0xFF; }
-  // Get the port in next 2 bytes
-  int getPort( ) { return getSz(1+2).getChar(1); }
   // Get unique ID in next 2 bytes
-  int getUniqueId() { return getSz(1+2+2).getChar(1);}
+  int getUniqueId() { return getSz(1+2).getChar(1);}
+  // Get the port in next 2 bytes
+  int getPort( ) { return getSz(1+2).getChar(1+2); }
   // Get the task# in the next 4 bytes
-  int  getTask( ) { return getSz(1+2+4).getInt(1+2); }
+  int  getTask( ) { return getSz(1+2+2+4).getInt(1+2+2); }
   // Get the flag in the next 1 byte
-  int  getFlag( ) { return getSz(1+2+4+1).get(1+2+4); }
+  int  getFlag( ) { return getSz(1+2+2+4+1).get(1+2+2+4); }
   /**
    * Write UDP into the ByteBuffer with custom port number
    *
@@ -1009,10 +1009,11 @@ public final class AutoBuffer {
    * @param type type of the UDP datagram
    * @param senderPort port of the sender of the datagram
    */
-  AutoBuffer putUdp(UDP.udp type, int senderPort){
+  AutoBuffer putUdp(UDP.udp type, int senderPort, int nodeMeta){
     assert _bb.position() == 0;
-    putSp(_bb.position() + 1 + 2);
+    putSp(_bb.position() + 1 + 2 + 2);
     _bb.put    ((byte)type.ordinal());
+    _bb.putChar((char)nodeMeta);
     _bb.putChar((char)senderPort);
     return this;
   }
@@ -1026,11 +1027,11 @@ public final class AutoBuffer {
    * @param type type of the UDP datagram
    */
   AutoBuffer putUdp(UDP.udp type) {
-    return putUdp(type, calculateNodeUniqueMeta(H2O.SELF));
+    return putUdp(type, H2O.H2O_PORT, calculateNodeUniqueMeta(H2O.SELF));
   }
 
   public static char calculateNodeUniqueMeta(H2ONode node) {
-    return (char)H2O.H2O_PORT;
+    return 777;
   }
 
   public static boolean decodeIsClient(char nodeMeta){
@@ -1047,7 +1048,7 @@ public final class AutoBuffer {
   AutoBuffer putTask(int ctrl, int tasknum) {
     assert _bb.position() == 0;
     putSp(_bb.position()+1+2+4);
-    _bb.put((byte)ctrl).putChar(calculateNodeUniqueMeta(H2O.SELF)).putInt(tasknum);
+    _bb.put((byte)ctrl).putChar(calculateNodeUniqueMeta(H2O.SELF)).putChar((char)H2O.H2O_PORT).putInt(tasknum);
     return this;
   }
 
