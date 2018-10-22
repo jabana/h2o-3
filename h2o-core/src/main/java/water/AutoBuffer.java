@@ -139,7 +139,7 @@ public final class AutoBuffer {
    *  remoteAddress set to null means that the communication is originating from non-h2o node, non-null value
    *  represents the case where the communication is coming from h2o node.
    *  */
-  public AutoBuffer(ByteChannel sock, InetAddress remoteAddress) throws IOException {
+  public AutoBuffer(ByteChannel sock, InetAddress remoteAddress ) throws IOException {
     _chan = sock;
     raisePriority();            // Make TCP priority high
     _bb = BBP_BIG.make();       // Get a big / TPC-sized ByteBuffer
@@ -147,7 +147,7 @@ public final class AutoBuffer {
     _read = true;               // Reading by default
     _firstPage = true;
 
-    // Read IP & Port from the socket address. Also figure out H2ONode
+    // Read Inet from socket, port from the stream, figure out H2ONode
     if(remoteAddress != null){
       _h2o = H2ONode.intern(remoteAddress.getAddress(), getPort());
     }else{
@@ -155,7 +155,7 @@ public final class AutoBuffer {
       // It is done for 2 reasons:
       //  - H2ONode.intern creates a new thread and if there's a lot of connections
       //    from non-h2o environment, it could end up with too many open files exception.
-      //  - H2OIntern also reads additional information which we do not send
+      //  - H2OIntern also reads port (getPort()) and additional information which we do not send
       //    in communication originating from non-h2o nodes
       _h2o = null;
     }
@@ -1001,7 +1001,7 @@ public final class AutoBuffer {
   // Get the flag in the next 1 byte
   int  getFlag( ) { return getSz(1+2+2+4+1).get(1+2+2+4); }
   /**
-   * Write UDP into the ByteBuffer with custom port number
+   * Write UDP into the ByteBuffer with custom sender's port number
    *
    * This method sets the ctrl, port, task.
    * Ready to write more bytes afterwards
