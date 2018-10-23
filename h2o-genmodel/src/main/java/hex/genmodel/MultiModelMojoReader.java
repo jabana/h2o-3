@@ -2,6 +2,7 @@ package hex.genmodel;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +23,47 @@ public abstract class MultiModelMojoReader<M extends MojoModel> extends ModelMoj
     }
     _subModels = Collections.unmodifiableMap(models);
     readParentModelData();
+    MojoModel[] mojoModels = new MojoModel[models.size()];
+    models.values().toArray(mojoModels);
+    reorder(mojoModels, readkv("base_models_num", 0));
+  }
+
+
+  private void reorder(final MojoModel[] models, final int baseModelNum) {
+    final MojoModel reference = models[baseModelNum];
+
+    for (int i = 0; i < models.length; i++) {
+      final String[] names = models[i]._names;
+      for (int j = 0; j < reference._names.length; j++) {
+        if (!names[j].equals(reference._names[j])) {
+          reorder(models[i], reference._names);
+          break;
+        }
+      }
+    }
+  }
+
+  private void reorder(final MojoModel model, final String[] referentialNames) {
+    String[] originalNames = Arrays.copyOf(model._names, model._names.length);
+    String[][] originalDomains = Arrays.copyOf(model._domains, model._domains.length);
+
+    for (int i = 0; i < referentialNames.length; i++) {
+      final int pos = findIndex(originalNames, referentialNames[i]);
+      assert pos != -1; // Names of columns should be the same. If not, at least one of the models is broken.
+
+      model._names[i] = originalNames[pos];
+      model._domains[i] = originalDomains[pos];
+    }
+
+  }
+
+  private int findIndex(String[] arr, String searchedVal) {
+
+    for (int i = 0; i < arr.length; i++) {
+      if (arr[i].equals(searchedVal)) return i;
+    }
+
+    return -1;
   }
 
   protected MojoModel getModel(String key) {
