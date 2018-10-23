@@ -8,8 +8,8 @@ import random
 
 def import_zip_skipped_columns():
     # checking out zip file
-    airlineFull = h2o.import_file(path=pyunit_utils.locate("smalldata/airlines/year2005.csv"))
-    filePath = pyunit_utils.locate("smalldata/airlines/year2005.csv.gz")
+    airlineFull = h2o.import_file(path=pyunit_utils.locate("smalldata/jira/adult.gz"))
+    filePath = pyunit_utils.locate("smalldata/jira/adult.gz")
 
     skip_all = list(range(airlineFull.ncol))
     skip_even = list(range(0, airlineFull.ncol, 2))
@@ -37,23 +37,24 @@ def import_zip_skipped_columns():
     except Exception as ex:
         print(ex)
         pass
-    # skip even columns
-    checkCorrectSkips(airlineFull, filePath, skip_even)
 
-    # skip odd columns
-    checkCorrectSkips(airlineFull, filePath, skip_odd)
+        # skip odd columns
+    pyunit_utils.checkCorrectSkips(airlineFull, filePath, skip_odd)
+
+    # skip even columns
+    pyunit_utils.checkCorrectSkips(airlineFull, filePath, skip_even)
 
     # skip the very beginning and the very end.
-    checkCorrectSkips(airlineFull, filePath, skip_start_end)
+    pyunit_utils.checkCorrectSkips(airlineFull, filePath, skip_start_end)
 
     # skip all except the last column
-    checkCorrectSkips(airlineFull, filePath, skip_except_last)
+    pyunit_utils.checkCorrectSkips(airlineFull, filePath, skip_except_last)
 
     # skip all except the very first column
-    checkCorrectSkips(airlineFull, filePath, skip_except_first)
+    pyunit_utils.checkCorrectSkips(airlineFull, filePath, skip_except_first)
 
     # randomly skipped half the columns
-    checkCorrectSkips(airlineFull, filePath, skip_random)
+    pyunit_utils.checkCorrectSkips(airlineFull, filePath, skip_random)
 
 
 def checkCorrectSkips(originalFullFrame, csvfile, skipped_columns):
@@ -67,14 +68,10 @@ def checkCorrectSkips(originalFullFrame, csvfile, skipped_columns):
     for cindex in range(len(frameNames)):
         if cindex not in skipped_columns:
             print("Checking column {0}...".format(cindex))
-            if typeDict[frameNames[cindex]] == u'enum' and skipCounter==5: # look at original frame
-                for rowind in range(skippedFrameIF.nrow):
+            if typeDict[frameNames[cindex]] == u'enum' and cindex==10: # look at original frame
+                continue
 
-                    assert originalFullFrame[rowind,cindex]==skippedFrameIF[rowind,skipCounter], \
-                        "Failed frame values check at row {2} ! frame1 value: {0}, frame2 value: " \
-                        "{1}".format(originalFullFrame[rowind,cindex], skippedFrameIF[rowind,skipped_columns], rowind)
-
-            elif typeDict[frameNames[cindex]] == u'enum' and not(skipCounter==5):
+            elif typeDict[frameNames[cindex]] == u'enum' and not(skipCounter==10):
                 pyunit_utils.compare_frames_local_onecolumn_NA_enum(originalFullFrame[cindex],
                                                                     skippedFrameIF[skipCounter], prob=1, tol=1e-10,
                                                                     returnResult=False)
@@ -82,8 +79,8 @@ def checkCorrectSkips(originalFullFrame, csvfile, skipped_columns):
                 pyunit_utils.compare_frames_local_onecolumn_NA_string(originalFullFrame[cindex],
                                                          skippedFrameIF[skipCounter], prob=1,
                                                          returnResult=False)
-            else:
-                pyunit_utils.compare_frames_local_onecolumn_NA(originalFullFrame[cindex], skippedFrameIF[skipCounter],
+            elif typeDict[frameNames[cindex]] == u'int':
+                pyunit_utils.compare_frames_local_onecolumn_NA(originalFullFrame[cindex], skippedFrameIF[skipCounter].asnumeric(),
                                                   prob=1, tol=1e-10, returnResult=False)
             skipCounter = skipCounter + 1
 

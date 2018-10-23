@@ -56,9 +56,13 @@ def import_zip_skipped_columns():
     checkCorrectSkips(originalFull, filePath, skip_random)
 
 
-def checkCorrectSkips(originalFullFrame, csvfile, skipped_columns):
-    skippedFrameUF = h2o.upload_file(csvfile, skipped_columns=skipped_columns)
-    skippedFrameIF = h2o.import_file(csvfile, skipped_columns=skipped_columns)  # this two frames should be the same
+def checkCorrectSkips(originalFullFrame, csvfile, skipped_columns, naString=[]):
+    if naString==None:
+        skippedFrameUF = h2o.upload_file(csvfile, skipped_columns=skipped_columns)
+        skippedFrameIF = h2o.import_file(csvfile, skipped_columns=skipped_columns)  # this two frames should be the same
+    else:
+        skippedFrameUF = h2o.upload_file(csvfile, skipped_columns=skipped_columns, )
+        skippedFrameIF = h2o.import_file(csvfile, skipped_columns=skipped_columns)  # this two frames should be the same
     pyunit_utils.compare_frames_local(skippedFrameUF, skippedFrameIF, prob=0.5)
 
     skipCounter = 0
