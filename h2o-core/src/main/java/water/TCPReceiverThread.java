@@ -148,6 +148,7 @@ public class TCPReceiverThread extends Thread {
     public ByteChannel _sock;
     public AutoBuffer _ab;
     private final InetAddress address;
+    
     public TCPReaderThread(ByteChannel sock, AutoBuffer ab, InetAddress address) {
       super("TCP-"+ab._h2o+"-"+(ab._h2o._tcp_readers++));
       _sock = sock;
@@ -296,10 +297,9 @@ public class TCPReceiverThread extends Thread {
     }
 
     // Suicide packet?  Short-n-sweet...
-    if( ctrl == UDP.udp.rebooted.ordinal()) {
+    if( ctrl == UDP.udp.rebooted.ordinal())
       UDPRebooted.checkForSuicide(ctrl, ab);
-      return; // no more work to do as we already handled the shutdown
-    }
+
 
     // Drop the packet.
     if( drop != 0 ) return;
@@ -346,7 +346,7 @@ public class TCPReceiverThread extends Thread {
     // DTask gets tossed on a low priority queue to do "the real work".  Since
     // this is coming from a UDP packet the deser work is actually small.
 
-    
+
     H2O.submitTask(new FJPacket(ab,ctrl));
   }
 
