@@ -6,7 +6,8 @@ import h2o
 from tests import pyunit_utils
 import random
 
-def import_zip_skipped_columns():
+# note that import folder can only be done with import_file
+def import_folder_skipped_columns():
     # checking out zip file
     originalFull = h2o.import_file(path=pyunit_utils.locate("smalldata/synthetic_perfect_separation"))
     filePath = pyunit_utils.locate("smalldata/synthetic_perfect_separation")
@@ -31,12 +32,6 @@ def import_zip_skipped_columns():
         print(ex)
         pass
 
-    try:
-        bad = h2o.upload_file(filePath, skipped_columns=skip_all)   # skipped all
-        sys.exit(1)
-    except Exception as ex:
-        print(ex)
-        pass
     # skip even columns
     checkCorrectSkips(originalFull, filePath, skip_even)
 
@@ -56,15 +51,8 @@ def import_zip_skipped_columns():
     checkCorrectSkips(originalFull, filePath, skip_random)
 
 
-def checkCorrectSkips(originalFullFrame, csvfile, skipped_columns, naString=[]):
-    if naString==None:
-        skippedFrameUF = h2o.upload_file(csvfile, skipped_columns=skipped_columns)
-        skippedFrameIF = h2o.import_file(csvfile, skipped_columns=skipped_columns)  # this two frames should be the same
-    else:
-        skippedFrameUF = h2o.upload_file(csvfile, skipped_columns=skipped_columns, )
-        skippedFrameIF = h2o.import_file(csvfile, skipped_columns=skipped_columns)  # this two frames should be the same
-    pyunit_utils.compare_frames_local(skippedFrameUF, skippedFrameIF, prob=0.5)
-
+def checkCorrectSkips(originalFullFrame, csvfile, skipped_columns):
+    skippedFrameIF = h2o.import_file(csvfile, skipped_columns=skipped_columns)  # this two frames should be the same
     skipCounter = 0
     typeDict = originalFullFrame.types
     frameNames = originalFullFrame.names
@@ -92,6 +80,6 @@ def checkCorrectSkips(originalFullFrame, csvfile, skipped_columns, naString=[]):
             skipCounter = skipCounter + 1
 
 if __name__ == "__main__":
-    pyunit_utils.standalone_test(import_zip_skipped_columns)
+    pyunit_utils.standalone_test(import_folder_skipped_columns)
 else:
-    import_zip_skipped_columns()
+    import_folder_skipped_columns()
