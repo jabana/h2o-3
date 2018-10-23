@@ -203,7 +203,7 @@ public class TimeLine extends UDP {
         SNAPSHOT = new long[CLOUD.size()][];
         // Broadcast a UDP packet, with the hopes of getting all SnapShots as close
         // as possible to the same point in time.
-        AutoBuffer.createForMulticastWrite(udp.timeline).close();
+        new AutoBuffer(H2O.SELF,udp.timeline._prior).putUdp(udp.timeline).close();
       }
       // Spin until all snapshots appear
       while( true ) {

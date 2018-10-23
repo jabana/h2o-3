@@ -148,6 +148,7 @@ public class TCPReceiverThread extends Thread {
     public ByteChannel _sock;
     public AutoBuffer _ab;
     private final InetAddress address;
+
     public TCPReaderThread(ByteChannel sock, AutoBuffer ab, InetAddress address) {
       super("TCP-"+ab._h2o+"-"+(ab._h2o._tcp_readers++));
       _sock = sock;
