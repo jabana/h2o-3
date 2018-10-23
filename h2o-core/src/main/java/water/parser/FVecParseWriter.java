@@ -28,7 +28,7 @@ public class FVecParseWriter extends Iced implements StreamParseWriter {
   private long _errCnt;
   int[] _parse_columns_indices;
 
-  // note that if parse_columns_indices==null, it imples all columns are parsed.
+  // note that if parse_columns_indices==null, it implies all columns are parsed.
   public FVecParseWriter(Vec.VectorGroup vg, int cidx, Categorical[] categoricals, byte[] ctypes, int chunkSize,
                          AppendableVec[] avs, int[] parse_columns_indices){
          // Required not-null

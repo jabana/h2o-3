@@ -276,9 +276,16 @@ public final class ParseDataset {
       parse_column_names = new String[parseCols];
       parse_column_types = new byte[parseCols];
 
-      for (int cindex = 0; cindex < parseCols; cindex++) {
-        parse_column_names[cindex] = setup._column_names[setup._parse_columns_indices[cindex]];
-        parse_column_types[cindex] = setup._column_types[setup._parse_columns_indices[cindex]];
+      if (setup._column_names.length == parse_column_names.length) { // no column skipping or users have specified column names with columns skipped already
+        for (int cindex = 0; cindex < parseCols; cindex++) {
+          parse_column_names[cindex] = setup._column_names[cindex];
+          parse_column_types[cindex] = setup._column_types[cindex];
+        }
+      } else {
+        for (int cindex = 0; cindex < parseCols; cindex++) {
+          parse_column_names[cindex] = setup._column_names[setup._parse_columns_indices[cindex]];
+          parse_column_types[cindex] = setup._column_types[setup._parse_columns_indices[cindex]];
+        }
       }
       setup._column_types=parse_column_types;
     }
@@ -916,12 +923,15 @@ public final class ParseDataset {
       }
       @Override public void map( Chunk in ) {
         if( _jobKey.get().stop_requested() ) throw new Job.JobCancelledException();
-        AppendableVec [] avs = new AppendableVec[_setup._number_columns];
-        for(int i = 0; i < avs.length; ++i)
-          if (_setup._column_types == null) // SVMLight
-            avs[i] = new AppendableVec(_vg.vecKey(_vecIdStart + i), _espc, Vec.T_NUM, _startChunkIdx);
-          else
-            avs[i] = new AppendableVec(_vg.vecKey(_vecIdStart + i), _espc, _setup._column_types[i], _startChunkIdx);
+        AppendableVec [] avs = new AppendableVec[_setup._parse_columns_indices.length];
+          for (int i = 0; i < avs.length; ++i)
+            if (_setup._column_types == null) // SVMLight which does not support skip columns anyway
+              avs[i] = new AppendableVec(_vg.vecKey(_vecIdStart + i), _espc, Vec.T_NUM, _startChunkIdx);
+            else
+              avs[i] = _setup._column_types.length==_setup._number_columns?
+                      new AppendableVec(_vg.vecKey(_vecIdStart + i), _espc, _setup._column_types[i], _startChunkIdx)
+                      :new AppendableVec(_vg.vecKey(_vecIdStart + _setup._parse_columns_indices[i]), _espc, _setup._column_types[i], _startChunkIdx);
+
         // Break out the input & output vectors before the parse loop
         FVecParseReader din = new FVecParseReader(in);
         FVecParseWriter dout;

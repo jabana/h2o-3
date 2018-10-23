@@ -574,11 +574,37 @@ def parse_setup(raw_frames, destination_frame=None, header=0, separator=None, co
         j["destination_frame"] = destination_frame
     if column_names is not None:
         if not isinstance(column_names, list): raise ValueError("col_names should be a list")
-        if len(column_names) != len(j["column_types"]): raise ValueError(
-            "length of col_names should be equal to the number of columns: %d vs %d"
-            % (len(column_names), len(j["column_types"])))
+        if (skipped_columns is not None) and len(skipped_columns)>0:
+            column_names_len = len(j["column_types"])-len(skipped_columns)
+            if (len(column_names)) != column_names_len:
+                raise ValueError(
+                    "length of col_names should be equal to the number of columns parsed: %d vs %d"
+                    % (len(column_names), column_names_len))
+        else:
+            if len(column_names) != len(j["column_types"]): raise ValueError(
+                "length of col_names should be equal to the number of columns: %d vs %d"
+                % (len(column_names), len(j["column_types"])))
         j["column_names"] = column_names
-    if column_types is not None:
+    if (column_types is not None):
+        if column_names is not None: # refine column types so that it is the same size as the column names
+            if isinstance(column_types, dict):
+                tempDict = dict()
+                for names in column_types.keys():
+                    tempDict[names] = column_types[names]
+                column_types=tempDict
+            elif isinstance(column_types, list):
+                tempList = []
+                for names in column_names:
+                    tempList.append(names)
+                column_types=tempList
+            else:
+                raise ValueError("col_types should be a list of types or a dictionary of column names to types")
+
+        if (skipped_columns is not None) and len(skipped_columns)>0:
+            column_types_len = len(j["column_types"])-len(skipped_columns)
+        else:
+            column_types_len = len(j["column_types"])
+
         if isinstance(column_types, dict):
             # overwrite dictionary to ordered list of column types. if user didn't specify column type for all names,
             # use type provided by backend
@@ -588,16 +614,29 @@ def parse_setup(raw_frames, destination_frame=None, header=0, separator=None, co
                 "names specified in col_types is not a subset of the column names")
             idx = 0
             column_types_list = []
-            for name in j["column_names"]:
-                if name in column_types:
-                    column_types_list.append(column_types[name])
-                else:
-                    column_types_list.append(j["column_types"][idx])
-                idx += 1
+
+            if len(j["column_names"])==column_types_len: # column names have already been skipped
+                for name in j["column_names"]: # column_names may have already been changed
+                    if name in column_types:
+                        column_types_list.append(column_types[name])
+                    else:
+                        column_types_list.append(j["column_types"][idx])
+                    idx += 1
+            else:
+                for name in j["column_names"]: # column_names may have already been changed
+                    if name in column_types and (idx not in skipped_columns):
+                        column_types_list.append(column_types[name])
+                    elif idx not in skipped_columns:
+                        column_types_list.append(j["column_types"][idx])
+                    idx += 1
+
             column_types = column_types_list
+            if len(column_types) != column_types_len:
+                raise ValueError(
+                    "length of col_types should be equal to the number of parsed columns")
         elif isinstance(column_types, list):
-            if len(column_types) != len(j["column_types"]): raise ValueError(
-                "length of col_types should be equal to the number of columns")
+            if len(column_types) != column_types_len: raise ValueError(
+                "length of col_types should be equal to the number of parsed columns")
             column_types = [column_types[i] if column_types[i] else j["column_types"][i] for i in
                             range(len(column_types))]
         else:  # not dictionary or list
