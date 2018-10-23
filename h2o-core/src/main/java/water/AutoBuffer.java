@@ -114,25 +114,6 @@ public final class AutoBuffer {
 
   static final java.nio.charset.Charset UTF_8 = java.nio.charset.Charset.forName("UTF-8");
 
-
-  /**
-   * Create AutoBuffer prepared to read multicast messages
-   * @param pack datagram packet
-   * @return AutoBuffer
-   */
-  static AutoBuffer createForMulticastRead(DatagramPacket pack){
-    return new AutoBuffer(pack);
-  }
-
-  /**
-   * Create AutoBuffer prepared to sent multicast message.
-   * @param type type of the request
-   * @return AutoBuffer
-   */
-  static AutoBuffer createForMulticastWrite(UDP.udp type){
-    return new AutoBuffer(H2O.SELF, type._prior).putUdp(type);
-  }
-
   /** Incoming TCP request.  Make a read-mode AutoBuffer from the open Channel,
    *  figure the originating H2ONode from the first few bytes read.
    *
@@ -146,7 +127,6 @@ public final class AutoBuffer {
     _bb.flip();
     _read = true;               // Reading by default
     _firstPage = true;
-
     // Read Inet from socket, port from the stream, figure out H2ONode
     if(remoteAddress!=null) {
       _h2o = H2ONode.intern(remoteAddress, getPort());
@@ -1044,7 +1024,6 @@ public final class AutoBuffer {
   AutoBuffer putTask(UDP.udp type, int tasknum) {
     return putUdp(type).put4(tasknum);
   }
-
   AutoBuffer putTask(int ctrl, int tasknum) {
     assert _bb.position() == 0;
     putSp(_bb.position()+1+2+2+4);

@@ -51,13 +51,13 @@ public class TCPReceiverThread extends Thread {
   }
 
   private H2ONode handleNewNode(InetAddress inetAddress, int port, boolean isClient, int uniqueNum){
-    H2ONode node = H2ONode.getClientByIPPort(inetAddress.getHostAddress() + ":" + port);
+    //H2ONode node = H2ONode.getClientByIPPort(inetAddress.getHostAddress() + ":" + port);
 
-    if (isClient && node != null && node.nodeUniqueNum != uniqueNum) {
-      H2ONode.removeClient(node);
-    }
+    //if (isClient && node != null && node.nodeUniqueNum != uniqueNum) {
+    //  H2ONode.removeClient(node);
+    //}
     H2ONode h2o = H2ONode.intern(inetAddress, port);
-    h2o.nodeUniqueNum = uniqueNum;
+    //h2o.nodeUniqueNum = uniqueNum;
     return h2o;
   }
 
@@ -148,7 +148,6 @@ public class TCPReceiverThread extends Thread {
     public ByteChannel _sock;
     public AutoBuffer _ab;
     private final InetAddress address;
-    
     public TCPReaderThread(ByteChannel sock, AutoBuffer ab, InetAddress address) {
       super("TCP-"+ab._h2o+"-"+(ab._h2o._tcp_readers++));
       _sock = sock;
@@ -299,7 +298,6 @@ public class TCPReceiverThread extends Thread {
     // Suicide packet?  Short-n-sweet...
     if( ctrl == UDP.udp.rebooted.ordinal())
       UDPRebooted.checkForSuicide(ctrl, ab);
-
 
     // Drop the packet.
     if( drop != 0 ) return;
