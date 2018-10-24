@@ -159,10 +159,15 @@ h2o.parseSetup <- function(data, pattern="", destination_frame = "", header = NA
   if( !is.null(decrypt_tool) ) parseSetup.params$decrypt_tool <- .decrypt_tool_id(decrypt_tool)
 
   parseSetup <- .h2o.__remoteSend(.h2o.__PARSE_SETUP, method = "POST", .params = parseSetup.params)
+  parsedColLength <- parseSetup$number_columns
+  if (!is.null(skipped_columns)) {
+    parsedColLength <- parsedColLength-length(skipped_columns)
+  }
+  
   # set the column names
   if (!is.null(col.names)) {
     parseSetup$column_names <- if(is.H2OFrame(col.names)) colnames(col.names) else col.names
-    if (!is.null(parseSetup$column_names) && (length(parseSetup$column_names) != parseSetup$number_columns)) {
+    if (!is.null(parseSetup$column_names) && (length(parseSetup$column_names) != parsedColLength)) {
                   stop("length of col.names must equal to the number of columns in dataset") } }
 
   # set col.types
