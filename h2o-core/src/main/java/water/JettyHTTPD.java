@@ -14,7 +14,7 @@ import water.api.RequestServer;
 import water.api.schemas3.H2OErrorV3;
 import water.exceptions.H2OAbstractRuntimeException;
 import water.exceptions.H2OFailException;
-import water.server.ExtensionHandler;
+import water.server.RequestAuthExtension;
 import water.util.HttpResponseStatus;
 import water.util.Log;
 import water.util.StringUtils;
@@ -121,17 +121,18 @@ public class JettyHTTPD extends AbstractHTTPD {
 
     final List<Handler> extHandlers = new ArrayList<Handler>();
     extHandlers.add(new AuthenticationHandler());
-    // here we wrap generic handlers into jetty-aware wrappers
-    for (final ExtensionHandler extensionHandler : ExtensionHandler.REGISTRY.getAll()) {
+    // here we wrap generic authentication handlers into jetty-aware wrappers
+    for (final RequestAuthExtension requestAuthExtension : ExtensionManager.getInstance().getAuthExtensions()) {
       extHandlers.add(new AbstractHandler() {
         @Override
         public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-          if (extensionHandler.handle(target, request, response)) {
+          if (requestAuthExtension.handle(target, request, response)) {
             baseRequest.setHandled(true);
           }
         }
       });
     }
+    //
     extHandlers.add(context);
 
     // Handlers that can only be invoked for an authenticated user (if auth is enabled)
